@@ -1,0 +1,73 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  text-align: center;
+  padding: 20px;
+}
+
+.color-symbols-container {
+  display: flex;
+  justify-content: space-between; /* Space out the symbols on both sides */
+  align-items: center; /* Center align vertically */
+  margin-bottom: 20px; /* Space between symbols and search bar */
+}
+
+.color-symbols {
+  display: flex;
+  align-items: center;
+}
+
+.color-symbols img {
+  width: 100px; /* Adjust size as needed */
+  height: 100px; /* Adjust size as needed */
+  margin: 0 5px; /* Space between symbols */
+}
+
+.search-container {
+  display: flex;
+  align-items: center; /* Center align vertically */
+}
+
+.search-input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-button {
+  padding: 10px 15px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.search-button:hover {
+  background-color: #0056b3;
+}
+
+.results-container {
+  margin-top: 20px;
+}
+
+.error {
+  color: red;
+}
+
+.card {
+  margin: 10px 0; /* Space between cards */
+}
+
+.card img {
+  width: 300px; /* Adjust size as needed */
+  height: auto; /* Maintain aspect ratio */
+}
