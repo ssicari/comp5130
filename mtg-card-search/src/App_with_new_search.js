@@ -21,39 +21,35 @@ function App() {
     const [keywords, setKeywords] = useState('');
 
     const fetchCards = async () => {
-      if (!searchTerm.trim() && !color && !rarity && !creatureType && !keywords) {
-          setCards([]);
-          setError('');
-          return;
-      }
-  
-      try {
-          const query = new URLSearchParams({
-              search: searchTerm,
-              color,
-              rarity,
-              creatureType,
-              keywords,
-          });
-  
-          // Log the query being sent to the backend
-          console.log(`Query sent to backend: ${query.toString()}`);
-  
-          const response = await fetch(`http://localhost:5000/api/cards?${query}`);
-          const data = await response.json();
-  
-          if (!data.cards || data.cards.length === 0) {
-              setError('No cards found');
-              setCards([]);
-          } else {
-              setCards(data.cards.filter(card => card.imageUrl));
-              setError('');
-          }
-      } catch (error) {
-          console.error('Error fetching cards:', error);
-          setError('An error occurred. Please try again.');
-      }
-  };
+        if (!searchTerm.trim() && !color && !rarity && !creatureType && !keywords) {
+            setCards([]);
+            setError('');
+            return;
+        }
+        try {
+            const query = new URLSearchParams({
+                search: searchTerm,
+                color,
+                rarity,
+                creatureType,
+                keywords,
+            });
+
+            const response = await fetch(`http://localhost:5000/api/cards?${query}`);
+            const data = await response.json();
+
+            if (!data.cards || data.cards.length === 0) {
+                setError('No cards found');
+                setCards([]);
+            } else {
+                setCards(data.cards.filter(card => card.imageUrl));
+                setError('');
+            }
+        } catch (error) {
+            console.error('Error fetching cards:', error);
+            setError('An error occurred. Please try again.');
+        }
+    };
 
     const handleSearchChange = (e) => setSearchTerm(e.target.value);
     const handleKeyDown = (e) => {
