@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './styles.css';
 import whiteSymbol from './white.png';
@@ -19,9 +19,6 @@ function App() {
     const [rarity, setRarity] = useState('');
     const [creatureType, setCreatureType] = useState('');
     const [keywords, setKeywords] = useState('');
-    const [showOwned, setShowOwned] = useState(false);
-    const [ownedCardIds, setOwnedCardIds] = useState([]);
-    const userId = '67560c1d6ecf8faf1ab75e4d'; // Replace with the logic to retrieve the logged-in user's ID
 
     const fetchCards = async () => {
         if (!searchTerm.trim() && !color && !rarity && !creatureType && !keywords) {
@@ -29,7 +26,6 @@ function App() {
             setError('');
             return;
         }
-
         try {
             const query = new URLSearchParams({
                 search: searchTerm,
@@ -37,11 +33,7 @@ function App() {
                 rarity,
                 creatureType,
                 keywords,
-                owned: showOwned ? 'true' : '',
-                userId,
             });
-
-            console.log(`Query sent to backend: ${query.toString()}`);
 
             const response = await fetch(`http://localhost:5000/api/cards?${query}`);
             const data = await response.json();
@@ -56,51 +48,6 @@ function App() {
         } catch (error) {
             console.error('Error fetching cards:', error);
             setError('An error occurred. Please try again.');
-        }
-    };
-
-    const fetchOwnedCards = async () => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/cards/owned?userId=${userId}`);
-            const data = await response.json();
-            console.log('Owned cards fetched from backend:', data.ownedCardIds);
-            setOwnedCardIds(data.ownedCardIds || []);
-        } catch (error) {
-            console.error('Error fetching owned cards:', error);
-        }
-    };
-
-    useEffect(() => {
-        fetchOwnedCards();
-    }, []);
-
-    const markAsOwned = async (cardId) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/cards/own', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, cardId }),
-            });
-            const data = await response.json();
-            console.log(data.message);
-            fetchOwnedCards();
-        } catch (error) {
-            console.error('Error marking card as owned:', error);
-        }
-    };
-
-    const markAsUnowned = async (cardId) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/cards/unown', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, cardId }),
-            });
-            const data = await response.json();
-            console.log(data.message);
-            fetchOwnedCards();
-        } catch (error) {
-            console.error('Error unmarking card as owned:', error);
         }
     };
 
@@ -158,8 +105,6 @@ function App() {
         setMessage('Logged out successfully.');
     };
 
-    const filteredCards = showOwned ? cards.filter(card => ownedCardIds.includes(card.id)) : cards;
-
     return (
         <Router>
             <div className="app">
@@ -213,19 +158,12 @@ function App() {
                         <button onClick={fetchCards} className="search-button">Search</button>
                     </div>
                 </div>
-                <button onClick={() => setShowOwned(!showOwned)} className="toggle-button">
-                    {showOwned ? 'Show All Cards' : 'Show Owned Cards'}
-                </button>
                 <div className="results-container">
                     {error && <p className="error">{error}</p>}
                     <ul>
-                        {filteredCards.map(card => (
+                        {cards.map(card => (
                             <li key={card.id} className="card">
                                 <h2>{card.name}</h2>
-                                <div className="card-buttons">
-                                    <button onClick={() => markAsOwned(card.id)}>Mark as Owned</button>
-                                    <button onClick={() => markAsUnowned(card.id)}>Unmark as Owned</button>
-                                </div>
                                 <img src={card.imageUrl} alt={card.name} />
                             </li>
                         ))}
