@@ -28,42 +28,40 @@ function App() {
     const userId = '67560c1d6ecf8faf1ab75e4d';
 
     const fetchCards = async () => {
-      try {
-          // Check if no search term or filters are provided
-          const noFilters =
-              !searchTerm.trim() && !color && !rarity && !creatureType && !keywords;
-  
-          // Build query parameters based on available filters
-          const query = new URLSearchParams({
-              search: searchTerm.trim() || '', // Include search term if provided
-              color: color || '',              // Include color if selected
-              rarity: rarity || '',            // Include rarity if selected
-              creatureType: creatureType || '',// Include creature type if specified
-              keywords: keywords || '',        // Include keywords if specified
-              userId,                          // Include user ID for owned cards
-              fetchAll: noFilters ? 'true' : 'false', // Fetch all cards if no filters/search
-          });
-  
-          console.log(`Query sent to backend: ${query.toString()}`);
-  
-          // Fetch cards from the backend
-          const response = await fetch(`http://localhost:5000/api/cards?${query}`);
-          const data = await response.json();
-  
-          // Handle response data
-          if (!data.cards || data.cards.length === 0) {
-              setError('No cards found');
-              setCards([]);
-          } else {
-              setCards(data.cards.filter((card) => card.imageUrl)); // Filter out cards with no images
-              setError('');
-          }
-      } catch (error) {
-          console.error('Error fetching cards:', error);
-          setError('An error occurred. Please try again.');
-      }
-  };
-  
+        if (!searchTerm.trim() && !color && !rarity && !creatureType && !keywords) {
+            setCards([]);
+            setError('');
+            return;
+        }
+
+        try {
+            const query = new URLSearchParams({
+                search: searchTerm,
+                color,
+                rarity,
+                creatureType,
+                keywords,
+                owned: showOwned ? 'true' : '',
+                userId,
+            });
+
+            console.log(`Query sent to backend: ${query.toString()}`);
+
+            const response = await fetch(`http://localhost:5000/api/cards?${query}`);
+            const data = await response.json();
+
+            if (!data.cards || data.cards.length === 0) {
+                setError('No cards found');
+                setCards([]);
+            } else {
+                setCards(data.cards.filter(card => card.imageUrl));
+                setError('');
+            }
+        } catch (error) {
+            console.error('Error fetching cards:', error);
+            setError('An error occurred. Please try again.');
+        }
+    };
 
     const fetchOwnedCards = async () => {
         try {
@@ -207,22 +205,10 @@ function App() {
         }
     };
 
-    const handleClearFilters = () => {
-      setSearchTerm('');
-      setColor('');
-      setRarity('');
-      setCreatureType('');
-      setKeywords('');
-      setCards([]);
-      setError('');
-      };
-
     const filteredCards = cards
         .filter(card => !showOwned || ownedCardIds.includes(card.id))
         .filter(card => !showGood || goodCardIds.includes(card.id))
         .filter(card => !showBad || badCardIds.includes(card.id));
-
-      
 
     return (
         <Router>
@@ -273,9 +259,6 @@ function App() {
                                 value={keywords}
                                 onChange={(e) => setKeywords(e.target.value)}
                             />
-                            <button onClick={handleClearFilters} className="clear-button">
-                              Clear Filters
-                            </button>
                         </div>
                         <button onClick={fetchCards} className="search-button">Search</button>
                     </div>
