@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './styles.css';
 import whiteSymbol from './white.png';
 import blueSymbol from './blue.png';
@@ -26,6 +26,7 @@ function App() {
     const [goodCardIds, setGoodCardIds] = useState([]);
     const [badCardIds, setBadCardIds] = useState([]);
     const userId = '67560c1d6ecf8faf1ab75e4d';
+    const navigate = useNavigate();
 
     const fetchCards = async () => {
       try {
@@ -206,6 +207,9 @@ function App() {
             });
             const data = await response.json();
             setMessage(data.message || 'Registration successful');
+            if (response.ok) {
+              navigate('/login'); // Redirect to login page after successful registration
+          }
         } catch (error) {
             console.error('Error during registration:', error);
             setMessage('Registration failed. Please try again.');
@@ -225,6 +229,7 @@ function App() {
                 localStorage.setItem('token', data.token);
                 setToken(data.token);
                 setMessage('Login successful');
+                navigate('/');
             } else {
                 setMessage(data.message || 'Login failed');
             }
@@ -267,152 +272,156 @@ function App() {
 
       
 
-    return (
-        <Router>
-            <div className="app">
-                <h1>Magic: The Gathering Cards</h1>
-                <div className="color-symbols-container">
-                    <div className="color-symbols">
-                        <img src={whiteSymbol} alt="White" />
-                        <img src={blueSymbol} alt="Blue" />
-                        <img src={blackSymbol} alt="Black" />
-                        <img src={redSymbol} alt="Red" />
-                        <img src={greenSymbol} alt="Green" />
-                    </div>
+        return (
+          <div className="app">
+              <h1 className="app-title">Magic: The Gathering Cards</h1>
+              <div className="color-symbols-container">
+                  <div className="color-symbols">
+                      <img src={whiteSymbol} alt="White" />
+                      <img src={blueSymbol} alt="Blue" />
+                      <img src={blackSymbol} alt="Black" />
+                      <img src={redSymbol} alt="Red" />
+                      <img src={greenSymbol} alt="Green" />
+                  </div>
+                  {/* Conditionally display search bar and filters if token exists */}
+                  {token && (
                     <div className="search-container">
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Search for a card..."
+                        className="search-input"
+                      />
+                      <div className="filters">
+                        <select onChange={(e) => setColor(e.target.value)} value={color}>
+                          <option value="">Any Color</option>
+                          <option value="Red">Red</option>
+                          <option value="Blue">Blue</option>
+                          <option value="Green">Green</option>
+                          <option value="White">White</option>
+                          <option value="Black">Black</option>
+                        </select>
+                        <select onChange={(e) => setRarity(e.target.value)} value={rarity}>
+                          <option value="">Any Rarity</option>
+                          <option value="Common">Common</option>
+                          <option value="Uncommon">Uncommon</option>
+                          <option value="Rare">Rare</option>
+                          <option value="Mythic Rare">Mythic Rare</option>
+                        </select>
                         <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Search for a card..."
-                            className="search-input"
+                          type="text"
+                          placeholder="Creature Type (e.g., Dragon)"
+                          value={creatureType}
+                          onChange={(e) => setCreatureType(e.target.value)}
                         />
-                        <div className="filters">
-                            <select onChange={(e) => setColor(e.target.value)} value={color}>
-                                <option value="">Any Color</option>
-                                <option value="Red">Red</option>
-                                <option value="Blue">Blue</option>
-                                <option value="Green">Green</option>
-                                <option value="White">White</option>
-                                <option value="Black">Black</option>
-                            </select>
-                            <select onChange={(e) => setRarity(e.target.value)} value={rarity}>
-                                <option value="">Any Rarity</option>
-                                <option value="Common">Common</option>
-                                <option value="Uncommon">Uncommon</option>
-                                <option value="Rare">Rare</option>
-                                <option value="Mythic Rare">Mythic Rare</option>
-                            </select>
-                            <input
-                                type="text"
-                                placeholder="Creature Type (e.g., Dragon)"
-                                value={creatureType}
-                                onChange={(e) => setCreatureType(e.target.value)}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Keywords (e.g., Haste, Flying)"
-                                value={keywords}
-                                onChange={(e) => setKeywords(e.target.value)}
-                            />
-                            <button onClick={handleClearFilters} className="clear-button">
-                              Clear Filters
-                            </button>
-                        </div>
-                        <button onClick={fetchCards} className="search-button">Search</button>
+                        <input
+                          type="text"
+                          placeholder="Keywords (e.g., Haste, Flying)"
+                          value={keywords}
+                          onChange={(e) => setKeywords(e.target.value)}
+                        />
+                        <button onClick={handleClearFilters} className="clear-button">
+                          Clear Filters
+                        </button>
+                      </div>
+                      <button onClick={fetchCards} className="search-button">Search</button>
                     </div>
-                </div>
-                <div className="toggle-container">
-                    <button onClick={() => { setShowOwned(!showOwned); setShowGood(false); setShowBad(false); }} className="toggle-button">
-                        {showOwned ? 'Show All Cards' : 'Show Owned Cards'}
-                    </button>
-                    <button onClick={() => { setShowGood(!showGood); setShowOwned(false); setShowBad(false); }} className="toggle-button">
-                        {showGood ? 'Show All Cards' : 'Show Good Cards'}
-                    </button>
-                    <button onClick={() => { setShowBad(!showBad); setShowOwned(false); setShowGood(false); }} className="toggle-button">
-                        {showBad ? 'Show All Cards' : 'Show Bad Cards'}
-                    </button>
-                </div>
-                <div className="results-container">
-                    {error && <p className="error">{error}</p>}
-                    <ul>
-                        {filteredCards.map(card => (
-                            <li key={card.id} className="card">
-                                <h2>{card.name}</h2>
-                                <div className="card-buttons">
-                                    <div className="ownership-buttons">
-                                        <button onClick={() => markAsOwned(card.id)} className="own-button">Mark as Owned</button>
-                                        <button onClick={() => markAsUnowned(card.id)} className="unown-button">Unmark as Owned</button>
-                                    </div>
-                                    <div className="rating-buttons">
-                                        <button onClick={() => markAsGood(card.id)} className="good-button">👍</button>
-                                        <button onClick={() => markAsBad(card.id)} className="bad-button">👎</button>
-                                    </div>
-                                </div>
-                                <img src={card.imageUrl} alt={card.name} />
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <Routes>
-                    <Route path="/register" element={
-                        <div className="registration-container">
-                            <h2>Register</h2>
-                            <form onSubmit={handleRegister}>
-                                <input
-                                    type="text"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    placeholder="Username"
-                                    required
-                                />
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Password"
-                                    required
-                                />
-                                <button type="submit">Register</button>
-                            </form>
-                            {message && <p>{message}</p>}
-                        </div>
-                    } />
-                    <Route path="/login" element={
-                        <div className="login-container">
-                            <h2>Login</h2>
-                            <form onSubmit={handleLogin}>
-                                <input
-                                    type="text"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    placeholder="Username"
-                                    required
-                                />
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Password"
-                                    required
-                                />
-                                <button type="submit">Login</button>
-                            </form>
-                            {message && <p>{message}</p>}
-                        </div>
-                    } />
-                    <Route path="/" element={token ? (
-                        <>
-                            <button onClick={handleLogout} className="logout-button">Logout</button>
-                        </>
-                    ) : (
-                        <Navigate to="/login" />
-                    )} />
-                </Routes>
-            </div>
-        </Router>
-    );
+                  )}
+              </div>
+              {token && (
+              <div className="toggle-container">
+                  <button onClick={() => { setShowOwned(!showOwned); setShowGood(false); setShowBad(false); }} className="toggle-button">
+                      {showOwned ? 'Show All Cards' : 'Show Owned Cards'}
+                  </button>
+                  <button onClick={() => { setShowGood(!showGood); setShowOwned(false); setShowBad(false); }} className="toggle-button">
+                      {showGood ? 'Show All Cards' : 'Show Good Cards'}
+                  </button>
+                  <button onClick={() => { setShowBad(!showBad); setShowOwned(false); setShowGood(false); }} className="toggle-button">
+                      {showBad ? 'Show All Cards' : 'Show Bad Cards'}
+                  </button>
+              </div>
+              )}
+              <div className="results-container">
+                  {error && <p className="error">{error}</p>}
+                  <ul>
+                      {filteredCards.map(card => (
+                          <li key={card.id} className="card">
+                              <h2>{card.name}</h2>
+                              <div className="card-buttons">
+                                  <div className="ownership-buttons">
+                                      <button onClick={() => markAsOwned(card.id)} className="own-button">Mark as Owned</button>
+                                      <button onClick={() => markAsUnowned(card.id)} className="unown-button">Unmark as Owned</button>
+                                  </div>
+                                  <div className="rating-buttons">
+                                      <button onClick={() => markAsGood(card.id)} className="good-button">👍</button>
+                                      <button onClick={() => markAsBad(card.id)} className="bad-button">👎</button>
+                                  </div>
+                              </div>
+                              <img src={card.imageUrl} alt={card.name} />
+                          </li>
+                      ))}
+                  </ul>
+              </div>
+              <Routes>
+                  <Route path="/register" element={
+                      <div className="registration-container">
+                          <h2>Register</h2>
+                          <form onSubmit={handleRegister}>
+                              <input
+                                  type="text"
+                                  value={username}
+                                  onChange={(e) => setUsername(e.target.value)}
+                                  placeholder="Username"
+                                  required
+                              />
+                              <input
+                                  type="password"
+                                  value={password}
+                                  onChange={(e) => setPassword(e.target.value)}
+                                  placeholder="Password"
+                                  required
+                              />
+                              <button type="submit">Register</button>
+                          </form>
+                          {message && <p>{message}</p>}
+                      </div>
+                  } />
+                  <Route path="/login" element={
+                      <div className="login-container">
+                          <h2>Login</h2>
+                          <form onSubmit={handleLogin}>
+                              <input
+                                  type="text"
+                                  value={username}
+                                  onChange={(e) => setUsername(e.target.value)}
+                                  placeholder="Username"
+                                  required
+                              />
+                              <input
+                                  type="password"
+                                  value={password}
+                                  onChange={(e) => setPassword(e.target.value)}
+                                  placeholder="Password"
+                                  required
+                              />
+                              <button type="submit">Login</button>
+                          </form>
+                          {message && <p>{message}</p>}
+                      </div>
+                  } />
+                  <Route path="/" element={token ? (
+                      <>
+                          <button onClick={handleLogout} className="logout-button">Logout</button>
+                      </>
+                  ) : (
+                      <Navigate to="/login" />
+                  )} />
+              </Routes>
+          </div>
+      );
+      
 }
 
 export default App;
