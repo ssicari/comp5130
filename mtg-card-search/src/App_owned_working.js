@@ -20,12 +20,8 @@ function App() {
     const [creatureType, setCreatureType] = useState('');
     const [keywords, setKeywords] = useState('');
     const [showOwned, setShowOwned] = useState(false);
-    const [showGood, setShowGood] = useState(false);
-    const [showBad, setShowBad] = useState(false);
     const [ownedCardIds, setOwnedCardIds] = useState([]);
-    const [goodCardIds, setGoodCardIds] = useState([]);
-    const [badCardIds, setBadCardIds] = useState([]);
-    const userId = '67560c1d6ecf8faf1ab75e4d';
+    const userId = '67560c1d6ecf8faf1ab75e4d'; // Replace with the logic to retrieve the logged-in user's ID
 
     const fetchCards = async () => {
         if (!searchTerm.trim() && !color && !rarity && !creatureType && !keywords) {
@@ -74,21 +70,8 @@ function App() {
         }
     };
 
-    const fetchGoodAndBadCards = async () => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/cards/ratings?userId=${userId}`);
-            const data = await response.json();
-            console.log('Good and bad cards fetched from backend:', data);
-            setGoodCardIds(data.goodCardIds || []);
-            setBadCardIds(data.badCardIds || []);
-        } catch (error) {
-            console.error('Error fetching good and bad cards:', error);
-        }
-    };
-
     useEffect(() => {
         fetchOwnedCards();
-        fetchGoodAndBadCards();
     }, []);
 
     const markAsOwned = async (cardId) => {
@@ -121,33 +104,13 @@ function App() {
         }
     };
 
-    const markAsGood = async (cardId) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/cards/mark-good', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, cardId }),
-            });
-            const data = await response.json();
-            console.log(data.message);
-            fetchGoodAndBadCards();
-        } catch (error) {
-            console.error('Error marking card as good:', error);
-        }
-    };
-
-    const markAsBad = async (cardId) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/cards/mark-bad', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, cardId }),
-            });
-            const data = await response.json();
-            console.log(data.message);
-            fetchGoodAndBadCards();
-        } catch (error) {
-            console.error('Error marking card as bad:', error);
+    const handleSearchChange = (e) => setSearchTerm(e.target.value);
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') fetchCards();
+        else if (e.key === 'Escape') {
+            setSearchTerm('');
+            setCards([]);
+            setError('');
         }
     };
 
@@ -160,9 +123,9 @@ function App() {
                 body: JSON.stringify({ username, password }),
             });
             const data = await response.json();
-            setMessage(data.message || 'Registration successful');
+            setMessage(data.message || 'Registration successful!');
         } catch (error) {
-            console.error('Error during registration:', error);
+            console.error('Registration error:', error);
             setMessage('Registration failed. Please try again.');
         }
     };
@@ -179,12 +142,12 @@ function App() {
             if (data.token) {
                 localStorage.setItem('token', data.token);
                 setToken(data.token);
-                setMessage('Login successful');
+                setMessage('Login successful!');
             } else {
-                setMessage(data.message || 'Login failed');
+                setMessage(data.message || 'Login failed. Please try again.');
             }
         } catch (error) {
-            console.error('Error during login:', error);
+            console.error('Login error:', error);
             setMessage('Login failed. Please try again.');
         }
     };
@@ -192,23 +155,10 @@ function App() {
     const handleLogout = () => {
         localStorage.removeItem('token');
         setToken('');
-        setMessage('Logged out successfully');
+        setMessage('Logged out successfully.');
     };
 
-    const handleSearchChange = (e) => setSearchTerm(e.target.value);
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter') fetchCards();
-        else if (e.key === 'Escape') {
-            setSearchTerm('');
-            setCards([]);
-            setError('');
-        }
-    };
-
-    const filteredCards = cards
-        .filter(card => !showOwned || ownedCardIds.includes(card.id))
-        .filter(card => !showGood || goodCardIds.includes(card.id))
-        .filter(card => !showBad || badCardIds.includes(card.id));
+    const filteredCards = showOwned ? cards.filter(card => ownedCardIds.includes(card.id)) : cards;
 
     return (
         <Router>
@@ -263,17 +213,9 @@ function App() {
                         <button onClick={fetchCards} className="search-button">Search</button>
                     </div>
                 </div>
-                <div className="toggle-container">
-                    <button onClick={() => { setShowOwned(!showOwned); setShowGood(false); setShowBad(false); }} className="toggle-button">
-                        {showOwned ? 'Show All Cards' : 'Show Owned Cards'}
-                    </button>
-                    <button onClick={() => { setShowGood(!showGood); setShowOwned(false); setShowBad(false); }} className="toggle-button">
-                        {showGood ? 'Show All Cards' : 'Show Good Cards'}
-                    </button>
-                    <button onClick={() => { setShowBad(!showBad); setShowOwned(false); setShowGood(false); }} className="toggle-button">
-                        {showBad ? 'Show All Cards' : 'Show Bad Cards'}
-                    </button>
-                </div>
+                <button onClick={() => setShowOwned(!showOwned)} className="toggle-button">
+                    {showOwned ? 'Show All Cards' : 'Show Owned Cards'}
+                </button>
                 <div className="results-container">
                     {error && <p className="error">{error}</p>}
                     <ul>
@@ -281,14 +223,8 @@ function App() {
                             <li key={card.id} className="card">
                                 <h2>{card.name}</h2>
                                 <div className="card-buttons">
-                                    <div className="ownership-buttons">
-                                        <button onClick={() => markAsOwned(card.id)} className="own-button">Mark as Owned</button>
-                                        <button onClick={() => markAsUnowned(card.id)} className="unown-button">Unmark as Owned</button>
-                                    </div>
-                                    <div className="rating-buttons">
-                                        <button onClick={() => markAsGood(card.id)} className="good-button">👍</button>
-                                        <button onClick={() => markAsBad(card.id)} className="bad-button">👎</button>
-                                    </div>
+                                    <button onClick={() => markAsOwned(card.id)}>Mark as Owned</button>
+                                    <button onClick={() => markAsUnowned(card.id)}>Unmark as Owned</button>
                                 </div>
                                 <img src={card.imageUrl} alt={card.name} />
                             </li>
