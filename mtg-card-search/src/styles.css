@@ -48,6 +48,22 @@
   background-color: #0056b3;
 }
 
+.toggle-button {
+  display: block;
+  margin: 10px auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.toggle-button:hover {
+  background-color: #218838;
+}
+
 .results-container {
   display: flex;
   flex-direction: column;
@@ -62,10 +78,49 @@
 
 .results-container .card {
   text-align: center;
-  margin: 10px;
+  margin: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  width: 300px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .results-container img {
   max-width: 200px;
   margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.card-buttons {
+  margin-top: 10px;
+}
+
+.card-buttons button {
+  margin: 5px;
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.card-buttons button:hover {
+  background-color: #0056b3;
+}
+
+.card-buttons button:last-child {
+  background-color: #dc3545;
+}
+
+.card-buttons button:last-child:hover {
+  background-color: #c82333;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
 }
