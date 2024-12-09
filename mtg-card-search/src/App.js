@@ -124,34 +124,77 @@ function App() {
     };
 
     const markAsGood = async (cardId) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/cards/mark-good', {
+      try {
+          // Check if the card is already marked as good
+          if (goodCardIds.includes(cardId)) {
+              // Unmark as good
+              const response = await fetch('http://localhost:5000/api/cards/unmark-good', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ userId, cardId }),
+              });
+              const data = await response.json();
+              console.log(data.message);
+  
+              // Remove from goodCardIds
+              setGoodCardIds((prev) => prev.filter((id) => id !== cardId));
+          } else {
+              // Mark as good
+              const response = await fetch('http://localhost:5000/api/cards/thumbs-up', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ userId, cardId }),
+              });
+              const data = await response.json();
+              console.log(data.message);
+  
+              // Add to goodCardIds and ensure it's removed from badCardIds
+              setGoodCardIds((prev) => [...prev, cardId]);
+              setBadCardIds((prev) => prev.filter((id) => id !== cardId));
+          }
+      } catch (error) {
+          console.error('Error toggling good status:', error);
+      }
+  };
+  
+  
+  
+  const markAsBad = async (cardId) => {
+    try {
+        // Check if the card is already marked as bad
+        if (badCardIds.includes(cardId)) {
+            // Unmark as bad
+            const response = await fetch('http://localhost:5000/api/cards/unmark-bad', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, cardId }),
             });
             const data = await response.json();
             console.log(data.message);
-            fetchGoodAndBadCards();
-        } catch (error) {
-            console.error('Error marking card as good:', error);
-        }
-    };
 
-    const markAsBad = async (cardId) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/cards/mark-bad', {
+            // Remove from badCardIds
+            setBadCardIds((prev) => prev.filter((id) => id !== cardId));
+        } else {
+            // Mark as bad
+            const response = await fetch('http://localhost:5000/api/cards/thumbs-down', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, cardId }),
             });
             const data = await response.json();
             console.log(data.message);
-            fetchGoodAndBadCards();
-        } catch (error) {
-            console.error('Error marking card as bad:', error);
+
+            // Add to badCardIds and ensure it's removed from goodCardIds
+            setBadCardIds((prev) => [...prev, cardId]);
+            setGoodCardIds((prev) => prev.filter((id) => id !== cardId));
         }
-    };
+    } catch (error) {
+        console.error('Error toggling bad status:', error);
+    }
+};
+
+
+  
 
     const handleRegister = async (e) => {
         e.preventDefault();
